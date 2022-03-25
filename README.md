@@ -1,4 +1,5 @@
-# adspower-automation
+# AdsPower Browser Automation
+
 Browser automation for AdsPower
 
 1. Clone repo
