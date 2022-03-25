@@ -1,0 +1,12 @@
+{
+  "ADSPOWER_URL": "http://local.adspower.com",
+  "ADSPOWER_PORT": "50300",
+  "PAGE_SIZE": 1000,
+  "GLOBAL_SLEEP": 5,
+  "DEX_URL": "https://trade.polysynth.com/refer-earn",
+  "METAMASK_URL": "chrome-extension://lmokefmdbcdababb/home.html",
+  "REF_CODE": "0x000000000000000000000000",
+  "DEFAULT_PASS": "00000",
+  "FOLDER_FOR_KEYS": "/Users/Downloads/Polysynth",
+  "DOWNLOADS_FOLDER": "/Users/Downloads"
+}
