@@ -1,6 +1,5 @@
-import requests
-import time
-import functions as f
+from support import functions as f
+from support import ui_elements as ui
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -11,26 +10,31 @@ import glob
 import os
 import csv
 import json
+import requests
+import time
 
+
+# Load config parameters
 with open('config.json') as config:
     CONFIG = json.load(config)
 
+# Create url to get all profiles, get all profiles
 list_url = '{}:{}/api/v1/user/list?page_size={}'.format(CONFIG['ADSPOWER_URL'],
                                                         CONFIG['ADSPOWER_PORT'],
                                                         CONFIG['PAGE_SIZE'],)
-
-# Get all profiles stored in AdsPower
 resp_list = requests.get(list_url).json()
 # Get profiles which already done
 list_of_files = os.listdir(CONFIG['FOLDER_FOR_KEYS'])
 list_of_names = [filename.split('.')[0] for filename in list_of_files]
 
+# ---------------------------------------------------------------------------------------
+# Start processing each profile
 for profile in resp_list['data']['list']:
 
     # Check if the profile has been processed before
-    # if profile['user_id'] in list_of_names:
-    #    print('{} already processed'.format(profile['user_id']))
-    #    continue
+    if profile['user_id'] in list_of_names:
+        print('{} already processed'.format(profile['user_id']))
+        continue
 
     # TODO: add empty response and exception handling
     # TODO: add exception handling (logs)
@@ -64,48 +68,38 @@ for profile in resp_list['data']['list']:
     driver.get(CONFIG['METAMASK_URL'])
 
     try:
-        xpath_getstarted = '//*[@id="app-content"]/div/div[2]/div/div/div/button'
-        flow_flag = f.check_element(driver, xpath_getstarted)
+        flow_flag = f.check_element(driver, ui.xpath_getstarted)
 
         if flow_flag:
             # GetStarted element already defined
-            f.click_element(driver, xpath_getstarted)
+            f.click_element(driver, ui.xpath_getstarted)
 
             # Click Create button
-            xpath_create1 = '//*[@id="app-content"]/div/div[2]/div/div/div[2]/div/div[2]/div[2]/button'
-            f.click_element(driver, xpath_create1)
+            f.click_element(driver, ui.xpath_create1)
 
             # Click No, thanks button
-            xpath_nothanks = '//*[@id="app-content"]/div/div[2]/div/div/div/div[5]/div[1]/footer/button[1]'
-            f.click_element(driver, xpath_nothanks)
+            f.click_element(driver, ui.xpath_nothanks)
 
             # Enter a new password
-            xpath_newpass = '//*[@id="create-password"]'
-            f.sendkeys_element(driver, xpath_newpass, CONFIG['DEFAULT_PASS'])
+            f.sendkeys_element(driver, ui.xpath_newpass, CONFIG['DEFAULT_PASS'])
 
             # Enter a new password once again (confirm)
-            xpath_confirmpass = '//*[@id="confirm-password"]'
-            f.sendkeys_element(driver, xpath_confirmpass, CONFIG['DEFAULT_PASS'])
+            f.sendkeys_element(driver, ui.xpath_confirmpass, CONFIG['DEFAULT_PASS'])
 
             # Click checkbox I have read terms
-            xpath_ihaveread = '//*[@id="app-content"]/div/div[2]/div/div/div[2]/form/div[3]/div'
-            f.click_element(xpath_ihaveread)
+            f.click_element(driver, ui.xpath_ihaveread)
 
             # Click Create button
-            xpath_create2 = '//*[@id="app-content"]/div/div[2]/div/div/div[2]/form/button'
-            f.click_element(driver, xpath_create2)
+            f.click_element(driver, ui.xpath_create2)
 
             # Click Next button
-            xpath_mmnext = '//*[@id="app-content"]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/button'
-            f.click_element(driver, xpath_mmnext)
+            f.click_element(driver, ui.xpath_mmnext)
 
             # Download secret key (seed)
-            xpath_download = '//*[@id="app-content"]/div/div[2]/div/div/div[2]/div[1]/div[2]/div[5]/a'
-            f.click_element(driver, xpath_download)
+            f.click_element(driver, ui.xpath_download)
 
             # Click Remind me later (do not reveal seed)
-            xpath_later = '//*[@id="app-content"]/div/div[2]/div/div/div[2]/div[2]/button[1]'
-            f.click_element(driver, xpath_later)
+            f.click_element(driver, ui.xpath_later)
 
             # Rename a downloaded file (wit seed)
             search_pattern = CONFIG['DOWNLOADS_FOLDER'] + '/*.txt'
@@ -122,12 +116,11 @@ for profile in resp_list['data']['list']:
 
     # Login (if required)
     try:
-        xpath_password = '//*[@id="password"]'
-        flow_flag = f.check_element(driver, xpath_password)
+        flow_flag = f.check_element(driver, ui.xpath_password)
 
         if flow_flag:
-            f.sendkeys_element(driver, xpath_password, CONFIG['DEFAULT_PASS'])
-            f.sendkeys_element(driver, xpath_password, Keys.RETURN)
+            f.sendkeys_element(driver, ui.xpath_password, CONFIG['DEFAULT_PASS'])
+            f.sendkeys_element(driver, ui.xpath_password, Keys.RETURN)
 
     except Exception as err:
         print(err.args)
@@ -141,16 +134,14 @@ for profile in resp_list['data']['list']:
     # ---------------------------------------------------------------------------------------
     # Connect wallet (if not connected) and select Metamask
     try:
-        xpath_connect = '//*[@id="__next"]/div/div[1]/div/div[1]/div[2]/div[2]/div[3]/div/p[1]'
-        flow_flag = f.check_element(driver, xpath_connect)
+        flow_flag = f.check_element(driver, ui.xpath_connect)
 
         if flow_flag:
-            f.click_element(driver, xpath_connect)
+            f.click_element(driver, ui.xpath_connect)
 
             # Select Metamask
-            xpath_mmbutton = '/html/body/div[4]/div/div/div/div[2]/div/div[1]/div[2]/h4'
-            flow_flag = f.check_element(driver, xpath_mmbutton)
-            f.click_element(driver, xpath_mmbutton) if flow_flag else None
+            flow_flag = f.check_element(driver, ui.xpath_mmbutton)
+            f.click_element(driver, ui.xpath_mmbutton) if flow_flag else None
 
     except Exception as err:
         print(err.args)
@@ -160,24 +151,21 @@ for profile in resp_list['data']['list']:
     # ---------------------------------------------------------------------------------------
     # Switch to Polygon (if not already switched)
     try:
-        xpath_switch = '//*[@id="__next"]/div/div[1]/div/div[1]/div[2]/div[2]/div[3]/div/p'
-        flow_flag = f.check_element(driver, xpath_switch)
+        flow_flag = f.check_element(driver, ui.xpath_switch)
 
         if flow_flag:
-            f.click_element(driver, xpath_switch)
+            f.click_element(driver, ui.xpath_switch)
 
             # Go to metamask html page (we can't work with Metamask unless we open its popup as a new tab)
             driver.get(CONFIG['METAMASK_URL'])
 
             # Approve adding a network (this popup appears if Polygon not saved in Metamask)
             # (press Approve button)
-            xpath_approve = '//*[@id="app-content"]/div/div[2]/div/div[2]/div/button[2]'
-            flow_flag = f.check_element(driver, xpath_approve)
-            f.click_element(driver, xpath_approve) if flow_flag else None
+            flow_flag = f.check_element(driver, ui.xpath_approve)
+            f.click_element(driver, ui.xpath_approve) if flow_flag else None
 
             # Switch to Polygon (press Switch network button)
-            xpath_switchmm = '//*[@id="app-content"]/div/div[2]/div/div[2]/div[2]/button[2]'
-            f.click_element(driver, xpath_switchmm)
+            f.click_element(driver, ui.xpath_switchmm)
 
     except Exception as err:
         print(err.args)
@@ -191,31 +179,27 @@ for profile in resp_list['data']['list']:
 
     # Connect wallet (if not connected) and select Metamask
     try:
-        xpath_connect = '//*[@id="__next"]/div/div[1]/div/div[1]/div[2]/div[2]/div[3]/div/p[1]'
-        flow_flag = f.check_element(driver, xpath_connect)
+        flow_flag = f.check_element(driver, ui.xpath_connect)
 
         if flow_flag:
             # Click Connect button
-            f.click_element(driver, xpath_connect)
+            f.click_element(driver, ui.xpath_connect)
 
             # Select Metamask in pop-up
-            xpath_mmbutton = '/html/body/div[4]/div/div/div/div[2]/div/div[1]/div[2]/h4'
-            flow_flag = f.check_element(driver, xpath_mmbutton)
-            f.click_element(driver, xpath_mmbutton) if flow_flag else None
+            flow_flag = f.check_element(driver, ui.xpath_mmbutton)
+            f.click_element(driver, ui.xpath_mmbutton) if flow_flag else None
 
             # Select account
             driver.get(CONFIG['METAMASK_URL'])
 
-            xpath_nextbutton = '//*[@id="app-content"]/div/div[2]/div/div[2]/div[3]/div[2]/button[2]'
-            flow_flag = f.check_element(driver, xpath_nextbutton)
+            flow_flag = f.check_element(driver, ui.xpath_nextbutton)
 
             if flow_flag:
                 # Click Next button (approve connection to accounts picked by default)
-                f.click_element(driver, xpath_nextbutton)
+                f.click_element(driver, ui.xpath_nextbutton)
 
                 # Click Connect
-                xpath_mmconnect = '//*[@id="app-content"]/div/div[2]/div/div[2]/div[2]/div[2]/footer/button[2]'
-                f.click_element(driver, xpath_mmconnect)
+                f.click_element(driver, ui.xpath_mmconnect)
 
     except Exception as err:
         print(err.args)
@@ -225,22 +209,18 @@ for profile in resp_list['data']['list']:
     # Click the link
     driver.get(CONFIG['DEX_URL'])
 
-    xpath_reflink = '//*[@id="__next"]/div/div[1]/div/div[3]/div/div[1]/div/div/div/div[1]/div[4]/p'
-    f.click_element(driver, xpath_reflink)
+    f.click_element(driver, ui.xpath_reflink)
 
     # Enter the referral code
-    xpath_refcode = '/html/body/div[8]/div/div/div/div/div[2]/input'
-    f.sendkeys_element(driver, xpath_refcode, CONFIG['REF_CODE'])
+    f.sendkeys_element(driver, ui.xpath_refcode, CONFIG['REF_CODE'])
 
     # Submit
     # TODO: save a screenshot
-    xpath_submit = '/html/body/div[8]/div/div/div/div/div[2]/div/button'
-    flow_flag = f.check_element(driver, xpath_submit)
-    f.click_element(driver, xpath_submit) if flow_flag else None
+    flow_flag = f.check_element(driver, ui.xpath_submit)
+    f.click_element(driver, ui.xpath_submit) if flow_flag else None
 
     # TODO: check entered value and errors
-    xpath_yourrefcode = '//*[@id="__next"]/div/div[1]/div/div[3]/div/div[1]/div/div/div/div[1]/div[2]/div/h6'
-    elem_yourrefcode = driver.find_element(By.XPATH, xpath_yourrefcode)
+    elem_yourrefcode = driver.find_element(By.XPATH, ui.xpath_yourrefcode)
     # Save public address
     CURRENT_RECORD.append(elem_yourrefcode.text)
 
